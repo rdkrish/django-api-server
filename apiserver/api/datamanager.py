@@ -16,37 +16,48 @@ class DataManager:
       return True
     return False
 
-  def input_validation(self, sms_from, sms_to, sms_text, output):
-    if sms_from is None:
+  def input_validation(self, input_data, output):
+    if 'from' not in input_data:
       output['error'] = 'from is missing'
-    elif sms_to is None:
+    elif 'to' not in input_data:
       output['error'] = 'to is missing'
-    elif sms_text is None:
+    elif 'text' not in input_data:
       output['error'] = 'text is missing'
-    elif not self.is_value_validated(sms_from, self.validations['from']['min_length'],
+    elif not self.is_value_validated(input_data['from'],
+        self.validations['from']['min_length'],
         self.validations['from']['max_length']):
       output['error'] = 'from is invalid'
-    elif not self.is_value_validated(sms_to, self.validations['to']['min_length'],
+    elif not self.is_value_validated(input_data['to'],
+        self.validations['to']['min_length'],
         self.validations['to']['max_length']):
       output['error'] = 'to is invalid'
-    elif not self.is_value_validated(sms_text, self.validations['text']['min_length'],
+    elif not self.is_value_validated(input_data['text'],
+        self.validations['text']['min_length'],
         self.validations['text']['max_length']):
       output['error'] = 'text is invalid'
 
-  def inbound_sms(self, sms_from, sms_to, sms_text, output):
+  def inbound_sms(self, input_data):
+    output = {
+      'message': '', 'error': ''
+    }
     try:
-      self.input_validation(sms_from, sms_to, sms_text, output)
+      self.input_validation(input_data, output)
       if len(output['error']) > 0:
-        return
+        return output
       output['message'] = 'Input fields are all validated'
     except:
       output['error'] = 'unknown failure'
+    return output
 
-  def outbound_sms(self, sms_from, sms_to, sms_text, output):
+  def outbound_sms(self, input_data):
+    output = {
+      'message': '', 'error': ''
+    }
     try:
-      self.input_validation(sms_from, sms_to, sms_text, output)
+      self.input_validation(input_data, output)
       if len(output['error']) > 0:
-        return
+        return output
       output['message'] = 'Input fields are all validated'
     except:
       output['error'] = 'unknown failure'
+    return output
