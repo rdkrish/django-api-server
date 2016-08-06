@@ -8,10 +8,10 @@ class ApiAuthentication(authentication.BasicAuthentication):
     username = request.META.get('HTTP_X_USERNAME')
     auth_id = request.META.get('HTTP_X_AUTHID')
     if username is None or auth_id is None:
-      raise exceptions.AuthenticationFailed('No such user')
+      raise exceptions.PermissionDenied('No such user')
     try:
       account = Account.objects.get(username=username, auth_id=auth_id)
       if account.id:
         return (account, None)
     except:
-      raise exceptions.AuthenticationFailed('No such user')
+      raise exceptions.PermissionDenied('No such user')

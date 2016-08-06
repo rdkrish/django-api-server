@@ -1,6 +1,9 @@
 import json
 
 from models import Account, PhoneNumber
+from cachemanager import CacheManager
+
+cachemanager = CacheManager()
 
 class DataManager:
 
@@ -54,6 +57,12 @@ class DataManager:
       if self.check_authorized(input_data['to'], user.id) is False:
         output['error'] = 'to parameter not found'
       else:
+        key_from_to = input_data['from'] + '_' + input_data['to']
+        if input_data['text'].strip() == 'STOP' and \
+          cachemanager.get(key_from_to) is None:
+          # Add from and to the redis
+          expire_time = 60 * 60 * 4 # 4 hours in seconds
+          cachemanager.setex(key_from_to, expire_time, key_from_to)
         output['message'] = 'inbound sms ok'
     except:
       output['error'] = 'unknown failure'
@@ -69,8 +78,20 @@ class DataManager:
         return output
       if self.check_authorized(input_data['from'], user.id) is False:
         output['error'] = 'from parameter not found'
+      elif cachemanager.get(input_data['from'] + '_' + input_data['to']):
+        output['error'] = 'sms from {} to {} blocked by STOP request'.format(
+          input_data['from'], input_data['to'])
       else:
-        output['message'] = 'outbound sms ok'
+        # If the request counter is not set, then set the request counter
+        # with expire time as 24 hours
+        if cachemanager.get(input_data['from']) is None:
+          cachemanager.setex(input_data['from'], 60 * 60 * 24, 0)
+        # Increment the counter of the requests from 'from' number
+        request_count = cachemanager.incr(input_data['from'])
+        if request_count >= 50:
+          output['error'] = 'limit reached for from {}'.format(input_data['from'])
+        else:
+          output['message'] = 'outbound sms ok'
     except:
       output['error'] = 'unknown failure'
     return output
