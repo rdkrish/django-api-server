@@ -1,5 +1,6 @@
 import json
 
+from models import Account, PhoneNumber
 
 class DataManager:
 
@@ -36,7 +37,13 @@ class DataManager:
         self.validations['text']['max_length']):
       output['error'] = 'text is invalid'
 
-  def inbound_sms(self, input_data):
+  def check_authorized(self, number, account_id):
+    phone = PhoneNumber.objects.filter(number=number, account_id=account_id).count()
+    if phone == 0:
+      return False
+    return True
+
+  def inbound_sms(self, input_data, user):
     output = {
       'message': '', 'error': ''
     }
@@ -44,12 +51,15 @@ class DataManager:
       self.input_validation(input_data, output)
       if len(output['error']) > 0:
         return output
-      output['message'] = 'Input fields are all validated'
+      if self.check_authorized(input_data['to'], user.id) is False:
+        output['error'] = 'to parameter not found'
+      else:
+        output['message'] = 'inbound sms ok'
     except:
       output['error'] = 'unknown failure'
     return output
 
-  def outbound_sms(self, input_data):
+  def outbound_sms(self, input_data, user):
     output = {
       'message': '', 'error': ''
     }
@@ -57,7 +67,10 @@ class DataManager:
       self.input_validation(input_data, output)
       if len(output['error']) > 0:
         return output
-      output['message'] = 'Input fields are all validated'
+      if self.check_authorized(input_data['from'], user.id) is False:
+        output['error'] = 'from parameter not found'
+      else:
+        output['message'] = 'outbound sms ok'
     except:
       output['error'] = 'unknown failure'
     return output
