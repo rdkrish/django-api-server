@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 
 import os
 
+from api.configmanager import config
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -78,10 +80,10 @@ WSGI_APPLICATION = 'apiserver.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'plivo',
-        'USER': 'plivo',
-        'PASSWORD': 'plivo',
-        'HOST': 'localhost',
+        'NAME': config['DB']['name'],
+        'USER': config['DB']['user'],
+        'PASSWORD': config['DB']['password'],
+        'HOST': config['DB']['host'],
         'PORT': '',
     }
 }

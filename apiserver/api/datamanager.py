@@ -1,7 +1,8 @@
 import json
 
-from models import Account, PhoneNumber
 from cachemanager import CacheManager
+from configmanager import config
+from models import Account, PhoneNumber
 
 cachemanager = CacheManager()
 
@@ -112,15 +113,17 @@ class DataManager:
         # then return an error message
         output['error'] = 'from parameter not found'
         return output
+      else:
+        # If valid 'from' phone number, then increment the counter for no. of requests
+        request_count = self.increment_and_get_counter(input_data)
       # Check if the sms request is blocked due to the STOP text sent in inbound sms request
       if cachemanager.get(input_data['from'] + '_' + input_data['to']):
         # If the communication is STOPPED, then send error message
         output['error'] = 'sms from {} to {} blocked by STOP request'.format(
           input_data['from'], input_data['to'])
         return output
-      request_count = self.increment_and_get_counter(input_data)
       # Check if the API request limit for the 'from' phone number is reached
-      if request_count >= 50:
+      if request_count >= int(config['Api']['max_request']):
         output['error'] = 'limit reached for from {}'.format(input_data['from'])
       else:
         # If all the conditions are satisfied, then send message back to the client
