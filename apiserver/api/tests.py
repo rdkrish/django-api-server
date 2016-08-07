@@ -33,6 +33,13 @@ class APITests(APITestCase):
       HTTP_X_USERNAME='plivo1', HTTP_X_AUTHID='20S0KPNOIM')
     self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+  def test_authentication_failed(self):
+    response = client.post('/inbound/sms/', self.data,
+      HTTP_X_USERNAME='plivo2', HTTP_X_AUTHID='20S0KPNOIM')
+    self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    response_data = json.loads(response.content)
+    self.assertEqual(response_data['detail'], 'No such user')
+
   def test_inbound_parameter_missing(self):
     # Test if any of the parameters are missing
     # Check if server detects 'from' parameter missing
