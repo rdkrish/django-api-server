@@ -15,3 +15,6 @@ class CacheManager:
 
   def incr(self, name, amount=1):
     return self.cache_connection.incr(name, amount)
+
+  def ttl(self, name):
+    return self.cache_connection.ttl(name)

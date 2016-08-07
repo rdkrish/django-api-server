@@ -130,5 +130,6 @@ STATIC_URL = '/static/'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'api.authentication.ApiAuthentication'
-    )
+    ),
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json'
 }
